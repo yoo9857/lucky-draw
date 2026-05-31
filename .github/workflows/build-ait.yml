@@ -1,0 +1,48 @@
+name: Build .ait
+
+# 푸시하거나 수동 실행(Run workflow)하면 리눅스 러너에서 .ait 를 빌드해
+# 아티팩트로 올린다. Windows 의 hermesc 부재 문제를 클라우드 리눅스로 우회.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build .ait
+        # npm 의 .bin 링크에 의존하지 않도록 ait CLI 를 직접 실행
+        run: node node_modules/@apps-in-toss/framework/bin/ait.js build
+
+      - name: Locate artifact
+        run: |
+          echo "생성된 .ait 파일:"
+          find . -name '*.ait' -not -path './node_modules/*'
+
+      - name: Upload .ait
+        uses: actions/upload-artifact@v4
+        with:
+          name: lucky-draw-ait
+          path: |
+            **/*.ait
+            !**/node_modules/**
+          if-no-files-found: error
+          retention-days: 30
