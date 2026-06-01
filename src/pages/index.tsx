@@ -89,9 +89,27 @@ function GamePage() {
 
   const onDaily = () => {
     const r = g.claimDaily();
-    if (!r) { setSheet('more'); return; }
+    if (!r) { showToast(`✅ 오늘 출석 완료 · ${g.state.streak}일 연속 🔥`); return; }
     setBurst(Date.now());
     showToast(`🎁 ${r.streak}일 연속! 티켓 +${r.tickets}, ${r.points}P`);
+  };
+
+  const adBusy = useRef(false);
+  const onWatchAd = async () => {
+    if (adBusy.current) return;
+    adBusy.current = true;
+    showToast('📺 광고 불러오는 중…');
+    const r = await showRewardedAd();
+    if (!r.supported) { g.watchAdForTickets(); showToast('🎟️ 티켓 +2 (테스트 환경 — 임시 지급)'); }
+    else if (r.rewarded) { g.watchAdForTickets(); showToast('🎟️ 티켓 +2 적립!'); }
+    else showToast('광고를 끝까지 봐야 보상을 받아요');
+    adBusy.current = false;
+  };
+
+  const onExchange = () => {
+    if (g.state.tickets >= MAX_TICKETS) { showToast('🎟️ 티켓이 이미 가득 찼어요'); return; }
+    const ok = g.exchangeTicket(200);
+    showToast(ok ? '🎟️ 티켓 1개 교환 완료' : '💎 포인트가 부족해요 (200P 필요)');
   };
 
   const onShare = async () => {
@@ -111,6 +129,7 @@ function GamePage() {
   }
 
   const s = g.state;
+  const noTickets = s.tickets <= 0;
   const secs = ticketSecondsLeft(s, Date.now());
   const timerText = s.tickets >= MAX_TICKETS ? '가득 찼어요' : `다음 충전 ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
   const near = outcome && outcome.matches === 5 && !outcome.bonusHit;
@@ -194,11 +213,14 @@ function GamePage() {
         {/* 액션 */}
         <View style={styles.actions}>
           <TouchableOpacity style={[styles.btn, styles.ghost]} onPress={autoPick}><Text style={styles.ghostTx}>🎲 자동</Text></TouchableOpacity>
-          <TouchableOpacity style={[styles.btn, styles.primary, (sel.length !== PICK || phase === 'drawing') && styles.btnOff]}
-            disabled={sel.length !== PICK || phase === 'drawing'} onPress={onDraw}>
-            <Text style={styles.primaryTx}>추첨하기 🎟️1</Text>
+          <TouchableOpacity
+            style={[styles.btn, styles.primary, (phase === 'drawing' || (!noTickets && sel.length !== PICK)) && styles.btnOff]}
+            disabled={phase === 'drawing' || (!noTickets && sel.length !== PICK)}
+            onPress={() => (noTickets ? setSheet('recharge') : onDraw())}>
+            <Text style={styles.primaryTx}>{noTickets ? '🎫 티켓 충전하기' : '추첨하기 🎟️1'}</Text>
           </TouchableOpacity>
         </View>
+        {noTickets && <Text style={styles.noTickHint}>티켓이 없어요 · 충전하면 다시 도전할 수 있어요</Text>}
 
         {/* 네비 */}
         <View style={styles.nav}>
@@ -213,14 +235,8 @@ function GamePage() {
       {toast !== '' && <View style={styles.toast}><Text style={styles.toastTx}>{toast}</Text></View>}
 
       <Sheet id={sheet} state={s} onClose={() => setSheet(null)}
-        onWatchAd={async () => {
-          showToast('📺 광고 불러오는 중…');
-          const r = await showRewardedAd();
-          if (!r.supported) { g.watchAdForTickets(); showToast('🎟️ 티켓 +2 (테스트 환경 — 임시 지급)'); return; }
-          if (r.rewarded) { g.watchAdForTickets(); showToast('🎟️ 티켓 +2 적립!'); }
-          else showToast('광고를 끝까지 봐야 보상을 받아요');
-        }}
-        onExchange={() => { const ok = g.exchangeTicket(200); showToast(ok ? '🎟️ 티켓 1개 교환' : '💎 포인트 부족(200P)'); }}
+        onWatchAd={onWatchAd}
+        onExchange={onExchange}
         onReset={() => { g.reset(); setSheet(null); setPhase('idle'); setOutcome(null); setRevealed([]); showToast('초기화했어요'); }}
         onMute={g.toggleMute} />
     </View>
@@ -296,13 +312,21 @@ function Sheet({ id, state, onClose, onWatchAd, onExchange, onReset, onMute }: {
             </>;
           })()}
 
-          {id === 'recharge' && <>
+          {id === 'recharge' && (() => {
+            const secs = ticketSecondsLeft(state, Date.now());
+            const timerTx = state.tickets >= MAX_TICKETS ? '가득 찼어요' : `다음 자동 충전 ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+            return <>
             <Text style={styles.sheetH}>티켓 충전 🎫</Text>
             <Text style={styles.sheetD}>티켓이 없어도 괜찮아요. 광고를 보거나 포인트로 바꿀 수 있어요. (10분마다 1개 자동 충전)</Text>
+            <View style={styles.ach}>
+              <View style={styles.achIc}><Text style={{ fontSize: 20 }}>🎟️</Text></View>
+              <View style={{ flex: 1 }}><Text style={styles.achT}>보유 티켓 {state.tickets} / {MAX_TICKETS}</Text><Text style={styles.achS}>{timerTx}</Text></View>
+            </View>
             <TouchableOpacity style={styles.adbtn} onPress={onWatchAd}><Text style={styles.adbtnTx}>📺 광고 보고 티켓 +2</Text></TouchableOpacity>
             <TouchableOpacity style={styles.exbtn} onPress={onExchange}><Text style={styles.exbtnTx}>💎 200P → 🎟️ 티켓 1개</Text></TouchableOpacity>
             <Text style={styles.note}>실제 앱에선 토스 보상형 광고 SDK로 동작해요(여기선 모의).</Text>
-          </>}
+          </>;
+          })()}
 
           {id === 'more' && <>
             <Text style={styles.sheetH}>더보기 ⚙️</Text>
@@ -368,6 +392,7 @@ const styles = StyleSheet.create({
   btn: { borderRadius: 17, paddingVertical: 15, alignItems: 'center' },
   ghost: { flex: 1, backgroundColor: 'rgba(255,255,255,0.6)' }, ghostTx: { color: G.brand, fontWeight: '800', fontSize: 15 },
   primary: { flex: 1.7, backgroundColor: '#7C5CFF' }, primaryTx: { color: '#fff', fontWeight: '800', fontSize: 15.5 }, btnOff: { backgroundColor: '#C9C3E6' },
+  noTickHint: { fontSize: 12, color: '#FF9F45', fontWeight: '700', textAlign: 'center', marginTop: 8 },
   nav: { flexDirection: 'row', gap: 7, marginTop: 14 },
   navBtn: { flex: 1, backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: 14, paddingVertical: 10, alignItems: 'center' },
   navIc: { fontSize: 18, marginBottom: 2 }, navTx: { fontSize: 11, fontWeight: '800', color: G.ink },

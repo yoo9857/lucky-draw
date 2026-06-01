@@ -268,8 +268,10 @@ function render(){
   document.getElementById('points').textContent=state.points.toLocaleString()+'P';
   document.getElementById('muteBtn').textContent=state.muted?'🔇':'🔊';
   document.getElementById('selcount').textContent=sel.length+' / '+PICK;
-  const canDraw=sel.length===PICK && !busy && (TEST||state.tickets>0);
-  document.getElementById('drawBtn').disabled=!canDraw;
+  const noTickets=!TEST && state.tickets<=0;
+  const drawBtnEl=document.getElementById('drawBtn');
+  if(noTickets){ drawBtnEl.disabled=false; drawBtnEl.innerHTML='🎫 충전하기'; }
+  else { drawBtnEl.disabled=!(sel.length===PICK && !busy); drawBtnEl.innerHTML='추첨하기 <span class="small">🎟️1</span>'; }
   // 데일리 버튼
   const db=document.getElementById('dailyBtn');
   if(state.lastDaily===todayKey()){db.textContent='✅ 출석 '+state.streak+'일';db.classList.remove('daily');}
@@ -283,8 +285,9 @@ function autoPick(){if(busy)return;sel=pickRandom(POOL,PICK);render();}
 
 // ================= 추첨 =================
 function onDraw(){
-  if(sel.length!==PICK||busy)return;
+  if(busy)return;
   if(!TEST && state.tickets<=0){openSheet('recharge');return;}
+  if(sel.length!==PICK)return;
   busy=true;
   if(!TEST){state.tickets-=1; if(state.tickets===MAX_TICKETS-1)state.lastRefill=Date.now();}
   render();
