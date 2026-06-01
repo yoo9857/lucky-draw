@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-<title>오늘의 행운</title>
+<title>오늘의 행운 🍀</title>
+<link rel="icon" type="image/png" href="assets/icon.png" />
+<link rel="apple-touch-icon" href="assets/icon.png" />
 <style>
   :root{--ink:#2A2150;--muted:#7C76A8;--brand:#7C5CFF;--gold:#FF9F45;}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
@@ -39,6 +41,8 @@
   .daily{background:linear-gradient(100deg,#FFB35C,#FF7AD9);color:#fff;border:0;animation:bob 1.2s ease infinite;}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
   .headrow{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;}
+  .titlerow{display:flex;align-items:center;gap:9px;}
+  .logo{width:38px;height:38px;border-radius:11px;box-shadow:0 4px 12px rgba(124,92,255,.35);}
 
   .stage{border-radius:24px;padding:18px 14px;margin-bottom:12px;min-height:128px;
     display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
@@ -145,7 +149,7 @@
 
   <div class="headrow">
     <div>
-      <h1>오늘의 행운</h1>
+      <div class="titlerow"><img class="logo" src="assets/icon.png" alt="오늘의 행운"/><h1>오늘의 행운</h1></div>
       <div class="sub">번호 6개를 골라 추첨에 도전하세요 🍀</div>
     </div>
     <div class="topright">

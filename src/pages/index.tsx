@@ -9,6 +9,7 @@ import { Confetti } from '../ui/Confetti';
 import { useGame, type DrawOutcome } from '../game/useGame';
 import { TIER_TABLE, POOL, PICK, MAX_TICKETS, pickRandom } from '../game/lotto';
 import { ACHIEVEMENTS, BOTS, ticketSecondsLeft } from '../game/gamestate';
+import { showRewardedAd } from '../ads';
 
 export const Route = createRoute('/', { component: GamePage });
 
@@ -212,7 +213,13 @@ function GamePage() {
       {toast !== '' && <View style={styles.toast}><Text style={styles.toastTx}>{toast}</Text></View>}
 
       <Sheet id={sheet} state={s} onClose={() => setSheet(null)}
-        onWatchAd={() => { g.watchAdForTickets(); showToast('🎟️ 티켓 +2 적립!'); }}
+        onWatchAd={async () => {
+          showToast('📺 광고 불러오는 중…');
+          const r = await showRewardedAd();
+          if (!r.supported) { g.watchAdForTickets(); showToast('🎟️ 티켓 +2 (테스트 환경 — 임시 지급)'); return; }
+          if (r.rewarded) { g.watchAdForTickets(); showToast('🎟️ 티켓 +2 적립!'); }
+          else showToast('광고를 끝까지 봐야 보상을 받아요');
+        }}
         onExchange={() => { const ok = g.exchangeTicket(200); showToast(ok ? '🎟️ 티켓 1개 교환' : '💎 포인트 부족(200P)'); }}
         onReset={() => { g.reset(); setSheet(null); setPhase('idle'); setOutcome(null); setRevealed([]); showToast('초기화했어요'); }}
         onMute={g.toggleMute} />
