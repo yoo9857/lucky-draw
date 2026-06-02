@@ -23,7 +23,9 @@
   .gdeco{position:fixed;z-index:0;pointer-events:none;opacity:.7;filter:drop-shadow(0 2px 6px rgba(120,70,160,.2));animation:floaty 4.4s ease-in-out infinite;}
   @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
   .phone{width:432px;max-width:100vw;min-height:100vh;min-height:100dvh;position:relative;
+    display:flex;flex-direction:column;
     padding:calc(18px + env(safe-area-inset-top)) 18px calc(26px + env(safe-area-inset-bottom));}
+  .statusbar,.headrow,.panel,.actions,.nav{flex-shrink:0;}
   .glass{background:rgba(255,255,255,.46);border:1px solid rgba(255,255,255,.7);
     box-shadow:0 10px 30px rgba(124,92,255,.15),inset 0 1px 0 rgba(255,255,255,.6);
     backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);}
@@ -47,7 +49,7 @@
   .titlerow{display:flex;align-items:center;gap:9px;}
   .logo{width:38px;height:38px;border-radius:11px;box-shadow:0 4px 12px rgba(124,92,255,.35);}
 
-  .stage{border-radius:24px;padding:18px 14px;margin-bottom:12px;min-height:128px;
+  .stage{border-radius:24px;padding:18px 14px;margin-bottom:12px;min-height:128px;flex:1 1 auto;
     display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
   .stage .glow{position:absolute;width:240px;height:240px;border-radius:50%;filter:blur(48px);opacity:0;transition:opacity .4s;
     background:radial-gradient(circle,var(--brand),transparent 70%);}

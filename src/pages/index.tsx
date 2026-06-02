@@ -375,7 +375,7 @@ const G = { brand: PALETTE.brand, ink: PALETTE.ink, muted: PALETTE.muted, gold: 
 const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: '#EEE7FF' },
   center: { alignItems: 'center', justifyContent: 'center' },
-  scroll: { padding: SCREEN_PAD, paddingBottom: 30 },
+  scroll: { padding: SCREEN_PAD, paddingBottom: 30, flexGrow: 1 },
   glass: { backgroundColor: 'rgba(255,255,255,0.5)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.7)' },
   statusbar: { flexDirection: 'row', gap: 10, marginBottom: 12, marginTop: 4 },
   chip: { flex: 1, borderRadius: 16, paddingVertical: 10, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
   iconBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.6)', alignItems: 'center', justifyContent: 'center' },
   dailyBtn: { paddingHorizontal: 12, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.6)', alignItems: 'center', justifyContent: 'center' },
   dailyOn: { backgroundColor: '#FF7AD9' }, dailyTx: { fontSize: 12, fontWeight: '800', color: G.brand },
-  stage: { borderRadius: 24, padding: 18, marginBottom: 12, minHeight: 150, alignItems: 'center', justifyContent: 'center' },
+  stage: { borderRadius: 24, padding: 18, marginBottom: 12, minHeight: 150, flexGrow: 1, alignItems: 'center', justifyContent: 'center' },
   ph: { color: G.muted, fontWeight: '600', fontSize: 14, textAlign: 'center', lineHeight: 21 },
   balls: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, alignItems: 'center', justifyContent: 'center' },
   ball: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: '#7C5CFF' },
