@@ -51,12 +51,12 @@ export function useGame(now: () => number = () => Date.now(), rng: Rng = Math.ra
     return () => { mounted = false; };
   }, []);
 
-  // 1초마다 티켓 충전 반영
+  // 티켓 충전 감지: 티켓 수가 실제로 늘 때만 부모 상태 갱신(매초 전체 리렌더 방지).
+  // 카운트다운 표시는 TicketTimer 가 자체적으로 1초마다 갱신한다.
   useEffect(() => {
     const id = setInterval(() => {
       const refilled = refillTickets(stateRef.current, now());
       if (refilled.tickets !== stateRef.current.tickets) persist(refilled);
-      else setState({ ...stateRef.current }); // 타이머 표시 갱신
     }, 1000);
     return () => clearInterval(id);
   }, [persist]);

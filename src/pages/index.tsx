@@ -133,8 +133,6 @@ function GamePage() {
 
   const s = g.state;
   const noTickets = s.tickets <= 0;
-  const secs = ticketSecondsLeft(s, Date.now());
-  const timerText = s.tickets >= MAX_TICKETS ? '가득 찼어요' : `다음 충전 ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
   const near = outcome && outcome.matches === 5 && !outcome.bonusHit;
 
   return (
@@ -147,7 +145,7 @@ function GamePage() {
         <View style={styles.statusbar}>
           <View style={[styles.glass, styles.chip]}>
             <Text style={styles.chipIc}>🎟️</Text>
-            <View><Text style={styles.chipV}>{s.tickets}/{MAX_TICKETS}</Text><Text style={styles.chipL}>{timerText}</Text></View>
+            <View><Text style={styles.chipV}>{s.tickets}/{MAX_TICKETS}</Text><TicketTimer tickets={s.tickets} lastRefill={s.lastRefill} /></View>
           </View>
           <View style={[styles.glass, styles.chip]}>
             <Text style={styles.chipIc}>💎</Text>
@@ -247,6 +245,19 @@ function GamePage() {
       <RankPage visible={rankOpen} points={s.points} plays={s.plays} onClose={() => setRankOpen(false)} onToast={showToast} />
     </View>
   );
+}
+
+/* ===== 티켓 카운트다운 (자체 1초 타이머 — 부모 리렌더 유발 안 함) ===== */
+function TicketTimer({ tickets, lastRefill }: { tickets: number; lastRefill: number }) {
+  const [, force] = useState(0);
+  useEffect(() => {
+    if (tickets >= MAX_TICKETS) return;
+    const id = setInterval(() => force((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [tickets]);
+  const secs = ticketSecondsLeft({ tickets, lastRefill }, Date.now());
+  const text = tickets >= MAX_TICKETS ? '가득 찼어요' : `다음 충전 ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+  return <Text style={styles.chipL}>{text}</Text>;
 }
 
 /* ===== 공 (등장 애니메이션) ===== */

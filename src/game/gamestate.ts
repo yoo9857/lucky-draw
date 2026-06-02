@@ -77,8 +77,8 @@ export function refillTickets(s: GameState, now: number): GameState {
   return { ...s, tickets, lastRefill };
 }
 
-/** 다음 티켓까지 남은 초 (가득이면 0). */
-export function ticketSecondsLeft(s: GameState, now: number): number {
+/** 다음 티켓까지 남은 초 (가득이면 0). GameState 의 일부만 받아도 동작. */
+export function ticketSecondsLeft(s: Pick<GameState, 'tickets' | 'lastRefill'>, now: number): number {
   if (s.tickets >= MAX_TICKETS) return 0;
   const elapsed = (now - s.lastRefill) % REFILL_MS;
   return Math.ceil((REFILL_MS - elapsed) / 1000);
