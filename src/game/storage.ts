@@ -32,9 +32,10 @@ export class GameRepository {
   constructor(private store: KeyValueStore = new InMemoryStore()) {}
 
   async load(now: number): Promise<GameState> {
-    const raw = await this.store.getItem(STORAGE_KEY);
-    if (!raw) return freshState(now);
     try {
+      const raw = await this.store.getItem(STORAGE_KEY);
+      if (!raw) return freshState(now);
+      // 손상/구버전 데이터가 와도 기본값과 병합해 안전하게 복구
       return { ...freshState(now), ...(JSON.parse(raw) as Partial<GameState>) };
     } catch {
       return freshState(now);
@@ -42,6 +43,10 @@ export class GameRepository {
   }
 
   async save(state: GameState): Promise<void> {
-    await this.store.setItem(STORAGE_KEY, JSON.stringify(state));
+    try {
+      await this.store.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      // 저장 실패는 치명적이지 않다(다음 저장에서 복구). 앱은 계속 동작.
+    }
   }
 }

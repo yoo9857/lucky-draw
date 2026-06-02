@@ -10,6 +10,8 @@ import { useGame, type DrawOutcome } from '../game/useGame';
 import { TIER_TABLE, POOL, PICK, MAX_TICKETS, pickRandom } from '../game/lotto';
 import { ACHIEVEMENTS, BOTS, ticketSecondsLeft } from '../game/gamestate';
 import { showRewardedAd } from '../ads';
+import { Decorations } from '../ui/Decorations';
+import { RankPage } from '../ui/RankPage';
 
 export const Route = createRoute('/', { component: GamePage });
 
@@ -31,6 +33,7 @@ function GamePage() {
   const [outcome, setOutcome] = useState<DrawOutcome | null>(null);
   const [burst, setBurst] = useState(0);
   const [sheet, setSheet] = useState<SheetId>(null);
+  const [rankOpen, setRankOpen] = useState(false);
   const [toast, setToast] = useState('');
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -137,6 +140,7 @@ function GamePage() {
   return (
     <View style={styles.fill}>
       <LinearGradientLite colors={PALETTE.bg} style={StyleSheet.absoluteFill} />
+      <Decorations />
       <Confetti burst={burst} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* 상태바 */}
@@ -225,7 +229,7 @@ function GamePage() {
         {/* 네비 */}
         <View style={styles.nav}>
           {([['odds', '📊', '등급표'], ['ach', '🏅', '도전과제'], ['recharge', '🎫', '충전'], ['rank', '📈', '랭킹'], ['more', '⚙️', '더보기']] as const).map(([id, ic, label]) => (
-            <TouchableOpacity key={id} style={styles.navBtn} onPress={() => setSheet(id)}>
+            <TouchableOpacity key={id} style={styles.navBtn} onPress={() => (id === 'rank' ? setRankOpen(true) : setSheet(id))}>
               <Text style={styles.navIc}>{ic}</Text><Text style={styles.navTx}>{label}</Text>
             </TouchableOpacity>
           ))}
@@ -239,6 +243,8 @@ function GamePage() {
         onExchange={onExchange}
         onReset={() => { g.reset(); setSheet(null); setPhase('idle'); setOutcome(null); setRevealed([]); showToast('초기화했어요'); }}
         onMute={g.toggleMute} />
+
+      <RankPage visible={rankOpen} points={s.points} plays={s.plays} onClose={() => setRankOpen(false)} onToast={showToast} />
     </View>
   );
 }
